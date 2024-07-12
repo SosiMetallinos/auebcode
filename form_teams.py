@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 import sys
 from openpyxl import Workbook
+from copy import deepcopy
 
 #cd C:\Users\Sosipatros\Documents\GitHub\auebcode
 #python form_teams.py students.xlsx
@@ -29,6 +30,7 @@ class Student:
         self.score = score
         self.friendid = friendid
         self.category = 0
+        self.team = 0
 
 # Read input Excel file
 input_data = pd.read_excel(args.input)
@@ -41,30 +43,79 @@ b1 = n // 4   # First boundary: 25th percentile
 b2 = n // 2   # Second boundary: 50th percentile (median)
 b3 = 3 * n // 4   # Third boundary: 75th percentile
 
+count_males = 0
+count_notmales = 0
 all_students = []
 for i in range(len(sorted_data)):
     if sorted_data[i][1] != 'male' and sorted_data[i][1] != 'female':
-        sorted_data[i][1] = 'non-specified'
+        sorted_data[i][1] = 'not-specified'
+    
+    if sorted_data[i][1] == 'male':
+        count_males += 1
+    else:
+        count_notmales += 1
+    
     if not(is_number(sorted_data[i][2])):
         sorted_data[i][2] = 0
     else:
         sorted_data[i][3] = sorted_data[i][3]
+    
     if not(is_number(sorted_data[i][3])):
         sorted_data[i][3] = 0
     else:
         sorted_data[i][3] = int(sorted_data[i][3])
+    
     student = Student(sorted_data[i][0], sorted_data[i][1], sorted_data[i][2], sorted_data[i][3])
     if i<b1:
-        student.category = -2
-    elif i<b2:
-        student.category = -1 #assigns one of the 4 categories. Condition works because sorted_data is sorted based on score
-    elif i<b3:
         student.category = 1
+    elif i<b2:
+        student.category = 10 #assigns one of the 4 categories. Condition works because sorted_data is sorted based on score
+    elif i<b3:
+        student.category = 100
     else:
-        student.category = 2
+        student.category = 1000
     all_students.append(student)
     print(student.id, student.gender, student.score, student.friendid, student.category)
 
+def assign_based_on_gender(students, m, ml, fm, ct): #Students DONT get to choose any member of their team, 2+ women per team of 4-5, balanced skills
+    count_members = m               
+    count_males = ml
+    count_females = fm
+    current_team = ct
+    for i in range(len(students)):
+        if students[i].team != 0: #Skip if team already assigned to this student
+            continue
+        if count_members >= 4: 
+            current_team +=1
+            count_members = 1
+            if students[i].gender == 'male':
+                count_males = 1
+                count_females = 0
+            else:
+                count_females = 1
+                count_males = 0
+            students[i].team = current_team
+        else:
+            if students[i].gender == 'male' and count_males >=2:
+                continue
+            elif students[i].gender == 'female' and count_females >=2:
+                continue
+            else:
+                students[i].team = current_team
+                if students[i].gender == 'male':
+                    count_males +=1
+                else:
+                    count_females +=1
+                count_members +=1
+            
+
+            
+
+
+    return 0
+
+print(assign_based_on_gender(all_students))
+print('Males:', count_males, 'Females:', count_notmales)
 
 """
 -----------------------------------------------------------------------------------------------------------------------------
