@@ -35,10 +35,18 @@ class Student:
 # Read input Excel file
 input_data = pd.read_excel(args.input)
 data_list = input_data.values.tolist()
-sorted_data = sorted(data_list, key=lambda x: x[2])
+
+sorted_by_id = sorted(data_list, key=lambda x: x[0])
+for i in range(0, len(sorted_by_id)-1):
+    if sorted_by_id[i][0]==sorted_by_id[i+1][0]:
+        print("ERROR: Duplicate students found. Terminating script.")
+        sys.exit(1)
+    
+
+sorted_by_score = sorted(data_list, key=lambda x: x[2])
 
 # Calculate boundaries
-n = len(sorted_data)
+n = len(sorted_by_score)
 b1 = n // 4   # First boundary: 25th percentile
 b2 = n // 2   # Second boundary: 50th percentile (median)
 b3 = 3 * n // 4   # Third boundary: 75th percentile
@@ -46,30 +54,30 @@ b3 = 3 * n // 4   # Third boundary: 75th percentile
 count_males = 0
 count_notmales = 0
 all_students = []
-for i in range(len(sorted_data)):
-    if sorted_data[i][1] != 'male' and sorted_data[i][1] != 'female':
-        sorted_data[i][1] = 'not-specified'
+for i in range(len(sorted_by_score)):
+    if sorted_by_score[i][1] != 'male' and sorted_by_score[i][1] != 'female':
+        sorted_by_score[i][1] = 'not-specified'
     
-    if sorted_data[i][1] == 'male':
+    if sorted_by_score[i][1] == 'male':
         count_males += 1
     else:
         count_notmales += 1
     
-    if not(is_number(sorted_data[i][2])):
-        sorted_data[i][2] = 0
+    if not(is_number(sorted_by_score[i][2])):
+        sorted_by_score[i][2] = 0
     else:
-        sorted_data[i][3] = sorted_data[i][3]
+        sorted_by_score[i][3] = sorted_by_score[i][3]
     
-    if not(is_number(sorted_data[i][3])):
-        sorted_data[i][3] = 0
+    if not(is_number(sorted_by_score[i][3])):
+        sorted_by_score[i][3] = 0
     else:
-        sorted_data[i][3] = int(sorted_data[i][3])
+        sorted_by_score[i][3] = int(sorted_by_score[i][3])
     
-    student = Student(sorted_data[i][0], sorted_data[i][1], sorted_data[i][2], sorted_data[i][3])
+    student = Student(sorted_by_score[i][0], sorted_by_score[i][1], sorted_by_score[i][2], sorted_by_score[i][3])
     if i<b1:
         student.category = 1
     elif i<b2:
-        student.category = 10 #assigns one of the 4 categories. Condition works because sorted_data is sorted based on score
+        student.category = 10 #assigns one of the 4 categories. Condition works because sorted_by_score is sorted based on score
     elif i<b3:
         student.category = 100
     else:
@@ -77,13 +85,13 @@ for i in range(len(sorted_data)):
     all_students.append(student)
     print(student.id, student.gender, student.score, student.friendid, student.category)
 
-def assign_based_on_gender(students, m, ml, fm, ct): #Students DONT get to choose any member of their team, 2+ women per team of 4-5, balanced skills
+def assign_based_on_gender(students, m, ml, fm, ct, teamed, teams): #Students DONT get to choose any member of their team, 2+ women per team of 4-5, balanced skills
     count_members = m               
     count_males = ml
     count_females = fm
     current_team = ct
     for i in range(len(students)):
-        if students[i].team != 0: #Skip if team already assigned to this student
+        if students[i].team != 0: #Skip if student already assigned a team
             continue
         if count_members >= 4: 
             current_team +=1
@@ -107,101 +115,33 @@ def assign_based_on_gender(students, m, ml, fm, ct): #Students DONT get to choos
                 else:
                     count_females +=1
                 count_members +=1
-            
-    return students, count_members, count_males, count_females, current_team
-
-stud, cmm, cml, cfm, ct = assign_based_on_gender(all_students)
-
-print(cmm, cml, cfm, ct)
-for row in stud:
-    print(row.team)
-
-"""
------------------------------------------------------------------------------------------------------------------------------
-def exists_already(id, matrix):
-    flag = False
-    for i in range(len(matrix)):
-        for j in matrix[i]:
-            if (j == id):
-                flag = True
-                break
-    return flag
-
-row0 = [0, 0, ""]
-pairs = [row0]
-singles = [row0]
-for i in range(len(data_list)):
-    if (data_list[i][3] != None):
-        if (not exists_already(data_list[i][0], pairs)):
-            pairs.append([data_list[i][0], data_list[i][3], data_list[i][1]])
-    else:
-        if (not exists_already(data_list[i][0], singles)):
-            singles.append([data_list[i][0], data_list[i][3], data_list[i][1]])
-
-pairs.pop(0)
-singles.pop(0)
-
-if (len(pairs)<2):
-    print("not enough pairs")
-    sys.exit()
-
-groups = [[pairs[0], pairs[1], 0, 0, 0, 0, 0]]
-
-if (pairs[0][2]=="male"):
-    groups[0][5] += 1
-else:
-    groups[0][6] += 1
-
-for i in range(len(data_list)):
-    gender = ""
-    if (data_list[i][0]==pairs[0][1]):
-        gender=data_list[i][1]
-
-for i in range(1, len(pairs)):
-    groups.append([0, 0, 0, 0, 0, 0, 0])
-    groups[i][0] = pairs[i][0]
-    groups[i][1] = pairs[i][1]
-    if (pairs[i][2]=="male"):
-        groups[i][5] += 1
-    else:
-        groups[i][6] += 1
-    if (pairs[i][2]=="male"):
-        groups[i][5] += 1
-    else:
-        groups[i][6] += 1
-
-for i in range(len(groups)//2):
-    if (groups[i][0] != pairs[i][0]):
-        groups[i][2] = pairs[-1][0]
-        groups[i][3] = pairs[-1][1]
-        if (pairs[-1][0]=="male"):
-            groups[i][5] += 1
+        teamed +=1 #INCORRECT RESULT, WHY?
+        if current_team in teams:
+            teams[current_team].append(students[i].id)
         else:
-            groups[i][6] += 1
-        if (pairs[-1][1]=="male"):
-            groups[i][5] += 1
-        else:
-            groups[i][6] += 1
-        pairs.pop(-1)
-
-for single in singles:
-    for group in groups:
-        if (group[5] + group[6] < 5):
-            group[4] = single[0]
-            if (single[0]=="male"):
-                group[5] += 1
-            else:
-                group[6] += 1
-            break
+            teams[current_team] = [students[i].id]
             
+    return students, count_members, count_males, count_females, current_team, teamed, teams
+
+repeat = 0
+stud, cmm, cml, cfm, ct, teamed, teams = deepcopy(all_students), 0, 0, 0, 1, 0, {}
+while teamed <= len(all_students) and repeat<=len(all_students)-teamed:
+    repeat +=1
+    stud, cmm, cml, cfm, ct, teamed, teams = assign_based_on_gender(deepcopy(stud), cmm, cml, cfm, ct, teamed, deepcopy(teams))
+
+print('Repetitions:', repeat)
+print(cmm, cml, cfm, ct, teamed, len(teams))
+for key in teams:
+    print(key, teams[key])
+
+
 wb = Workbook()
 ws = wb.active
 
-for row in groups:
-    ws.append([str(elem) for elem in row])
+for key in teams:
+    ws.append([str(elem) for elem in teams[key]])
 
 # Save the workbook
 wb.save('teams.xlsx')
-"""
 
 print("Team formation completed successfully!")
