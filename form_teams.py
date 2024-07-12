@@ -23,23 +23,47 @@ def is_number(value):
         return False
 
 class Student:
-    def __init__(self, id, score, gender, other_data):
+    def __init__(self, id, gender, score, friendid):
         self.id = id
-        self.score = score
         self.gender = gender
-        self.other_data = other_data
+        self.score = score
+        self.friendid = friendid
+        self.category = 0
 
 # Read input Excel file
 input_data = pd.read_excel(args.input)
 data_list = input_data.values.tolist()
+sorted_data = sorted(data_list, key=lambda x: x[2])
 
-for row in data_list:
-    if not(is_number(row[3])):
-        row[3] = 0
+# Calculate boundaries
+n = len(sorted_data)
+b1 = n // 4   # First boundary: 25th percentile
+b2 = n // 2   # Second boundary: 50th percentile (median)
+b3 = 3 * n // 4   # Third boundary: 75th percentile
+
+all_students = []
+for i in range(len(sorted_data)):
+    if sorted_data[i][1] != 'male' and sorted_data[i][1] != 'female':
+        sorted_data[i][1] = 'non-specified'
+    if not(is_number(sorted_data[i][2])):
+        sorted_data[i][2] = 0
     else:
-        row[3] = int(row[3])
-    print(row)
-
+        sorted_data[i][3] = sorted_data[i][3]
+    if not(is_number(sorted_data[i][3])):
+        sorted_data[i][3] = 0
+    else:
+        sorted_data[i][3] = int(sorted_data[i][3])
+    student = Student(sorted_data[i][0], sorted_data[i][1], sorted_data[i][2], sorted_data[i][3])
+    if i<b1:
+        student.category = -2
+    elif i<b2:
+        student.category = -1 #assigns one of the 4 categories. Condition works because sorted_data is sorted based on score
+    elif i<b3:
+        student.category = 1
+    else:
+        student.category = 2
+    all_students.append(student)
+    print(student.id, student.gender, student.score, student.friendid, student.category)
 
 
 """
