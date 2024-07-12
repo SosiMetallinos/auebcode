@@ -11,9 +11,28 @@ parser.add_argument('input', type=str, help='Input Excel file')
 parser.add_argument('-o', '--output', type=str, help='Output Excel file')
 args = parser.parse_args()  
 
+def is_number(value):
+    try:
+        # Try converting to numeric
+        numeric_value = pd.to_numeric(value)
+        # Explicitly return False if the value is NaN
+        if pd.isna(numeric_value):
+            return False
+        return True
+    except ValueError:
+        return False
+
+
 # Read input Excel file
 input_data = pd.read_excel(args.input)
 data_list = input_data.values.tolist()
+
+for row in data_list:
+    if not(is_number(row[3])):
+        row[3] = 0
+    else:
+        row[3] = int(row[3])
+    print(row)
 
 def exists_already(id, matrix):
     flag = False
@@ -91,7 +110,7 @@ for single in singles:
                 group[6] += 1
             break
       
-
+"""
 wb = Workbook()
 ws = wb.active
 
@@ -100,5 +119,6 @@ for row in groups:
 
 # Save the workbook
 wb.save('teams.xlsx')
+"""
 
 print("Team formation completed successfully!")
