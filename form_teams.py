@@ -22,6 +22,12 @@ def is_number(value):
     except ValueError:
         return False
 
+class Student:
+    def __init__(self, id, score, gender, other_data):
+        self.id = id
+        self.score = score
+        self.gender = gender
+        self.other_data = other_data
 
 # Read input Excel file
 input_data = pd.read_excel(args.input)
@@ -33,7 +39,6 @@ for row in data_list:
     else:
         row[3] = int(row[3])
     print(row)
-
 
 
 
