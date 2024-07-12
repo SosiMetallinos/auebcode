@@ -3,6 +3,8 @@ import pandas as pd
 import sys
 from openpyxl import Workbook
 
+#cd C:\Users\Sosipatros\Documents\GitHub\auebcode
+#python form_teams.py students.xlsx
 
 parser = argparse.ArgumentParser(description='Team Formation Program')
 parser.add_argument('input', type=str, help='Input Excel file')
