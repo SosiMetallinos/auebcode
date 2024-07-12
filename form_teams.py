@@ -34,6 +34,11 @@ for row in data_list:
         row[3] = int(row[3])
     print(row)
 
+
+
+
+"""
+-----------------------------------------------------------------------------------------------------------------------------
 def exists_already(id, matrix):
     flag = False
     for i in range(len(matrix)):
@@ -109,8 +114,7 @@ for single in singles:
             else:
                 group[6] += 1
             break
-      
-"""
+            
 wb = Workbook()
 ws = wb.active
 
