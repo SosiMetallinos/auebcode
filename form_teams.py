@@ -108,14 +108,13 @@ def assign_based_on_gender(students, m, ml, fm, ct): #Students DONT get to choos
                     count_females +=1
                 count_members +=1
             
+    return students, count_members, count_males, count_females, current_team
 
-            
+stud, cmm, cml, cfm, ct = assign_based_on_gender(all_students)
 
-
-    return 0
-
-print(assign_based_on_gender(all_students))
-print('Males:', count_males, 'Females:', count_notmales)
+print(cmm, cml, cfm, ct)
+for row in stud:
+    print(row.team)
 
 """
 -----------------------------------------------------------------------------------------------------------------------------
