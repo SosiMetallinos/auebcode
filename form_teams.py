@@ -66,10 +66,6 @@ class Team:
         else:
             return self.females
 
-    def isBalancedby(self, variable): #UNDER CONSTRUCTION
-        if isinstance(variable, str):
-            return True
-    
     def size(self):
         return len(self.members)
     
@@ -144,7 +140,6 @@ for i in range(len(sorted_by_score)):
     else:
         student.category = 1000
     all_students.append(student)
-    print(student.id, student.gender, student.score, student.friendid, student.category)
 
 def assign_based_on_gender(students, m, ml, fm, ct, teamed, teams): #Students DONT get to choose any member of their team, 2+ women per team of 4-5, balanced skills
     count_members = m               
@@ -184,7 +179,7 @@ def assign_based_on_gender(students, m, ml, fm, ct, teamed, teams): #Students DO
             
     return students, count_members, count_males, count_females, current_team, teamed, teams
 
-#CODE FOR CLASS APPROACH
+#INITIALIZE VARIABLES
 remaining = {}
 remaining['male'] = count_males  #at some point we will need to know if we have run out of one gender
 remaining['female'] = count_notmales
@@ -193,9 +188,7 @@ all_students[0].team = new_team_id
 initial_members = [ all_students[0] ]
 team1 = Team(new_team_id, initial_members)
 remaining[all_students[0].gender] -= 1
-
-print('id:', team1.id, team1.members[0].id, 'size', team1.size, 'males', team1.males, 'females', team1.females, 'scb', team1.scorebalance)
-
+#print('id:', team1.id, team1.members[0].id, 'size', team1.size, 'males', team1.males, 'females', team1.females, 'scb', team1.scorebalance)
 all_teams = [team1]
 for student in all_students:
     if student.team != 0:
@@ -238,7 +231,7 @@ wb = Workbook()
 ws = wb.active
 
 for team in all_teams:
-    ws.append([str(elem) for elem in team])
+    ws.append([str(elem) for elem in team.members])
 
 # Save the workbook
 wb.save('teams.xlsx')
