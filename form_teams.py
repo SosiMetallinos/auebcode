@@ -68,6 +68,9 @@ for i in range(0, len(sorted_by_id)-1):
     if sorted_by_id[i][0]==sorted_by_id[i+1][0]:
         print("ERROR: Duplicate students found. Terminating script.")
         sys.exit(1)
+    if not is_number(sorted_by_id[i][0]):
+        print("ERROR: Missing students.")
+        sys.exit(1)
     
 
 sorted_by_score = sorted(data_list, key=lambda x: x[2])
