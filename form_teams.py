@@ -34,21 +34,21 @@ class Student:
 
 class Team:
 
-    def __init__(self, id, team):
+    def __init__(self, id, members):
         self.id = id
-        # Ensure team is always a list
-        if isinstance(team, list):
-            self.team = team
+        # Ensure members is always a list
+        if isinstance(members, list):
+            self.members = members
         else:
-            if team != 0:
-                self.team = [team]
+            if members != 0:
+                self.members = [members] 
             else:
-                self.team = []
-        self.size = len(self.team)
+                self.members = []
+        self.size = len(self.members)
         self.males = 0
         self.females = 0
         self.scorebalance = 0
-        for member in self.team:
+        for member in self.members:
             if member.gender == 'male':
                 self.males +=1
             else:
@@ -59,19 +59,28 @@ class Team:
         if isinstance(variable, str):
             return True
 
-# Read input Excel file
-input_data = pd.read_excel(args.input)
-data_list = input_data.values.tolist()
+#Check for header
+preview_data = pd.read_excel(args.input, nrows=5)
+if all(isinstance(x, str) for x in preview_data.columns):
+    # Read the entire file with the first row as the header
+    input_data = pd.read_excel(args.input)
+    data_list = input_data.values.tolist()
+else:
+    # Read the entire file without treating the first row as the header
+    input_data = pd.read_excel(args.input, header=None)
+    data_list = input_data.values.tolist()
+
 
 sorted_by_id = sorted(data_list, key=lambda x: x[0])
-for i in range(0, len(sorted_by_id)-1):
+for i in range(len(sorted_by_id) - 1):
+    if not is_number(sorted_by_id[i][0]):
+        print("ERROR: Missing students. Row:", i) #LOGIC ISSUE
+        sys.exit(1)
     if sorted_by_id[i][0]==sorted_by_id[i+1][0]:
         j = i+1
         print("ERROR: Duplicate students found. Rows:", i, j) #LOGIC ISSUE
         sys.exit(1)
-    if not is_number(sorted_by_id[i][0]):
-        print("ERROR: Missing students. Row:", i) #LOGIC ISSUE
-        sys.exit(1)
+
     
 
 sorted_by_score = sorted(data_list, key=lambda x: x[2])
@@ -155,8 +164,18 @@ def assign_based_on_gender(students, m, ml, fm, ct, teamed, teams): #Students DO
     return students, count_members, count_males, count_females, current_team, teamed, teams
 
 #CODE FOR CLASS APPROACH
+current_team = 1
+initial_members = [ all_students[0] ]
+team1 = Team(current_team, initial_members)
+print('id:', team1.id, team1.members[0].id, 'size', team1.size, 'males', team1.males, 'females', team1.females, 'scb', team1.scorebalance)
+"""
+all_teams = 
 for student in all_students:
-    
+    if student.team != 0:
+        continue
+    for i in range(0, )
+"""
+
     
 
 """
