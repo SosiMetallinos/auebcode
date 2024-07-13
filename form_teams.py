@@ -66,10 +66,11 @@ data_list = input_data.values.tolist()
 sorted_by_id = sorted(data_list, key=lambda x: x[0])
 for i in range(0, len(sorted_by_id)-1):
     if sorted_by_id[i][0]==sorted_by_id[i+1][0]:
-        print("ERROR: Duplicate students found. Terminating script.")
+        j = i+1
+        print("ERROR: Duplicate students found. Rows:", i, j) #LOGIC ISSUE
         sys.exit(1)
     if not is_number(sorted_by_id[i][0]):
-        print("ERROR: Missing students.")
+        print("ERROR: Missing students. Row:", i) #LOGIC ISSUE
         sys.exit(1)
     
 
@@ -153,6 +154,12 @@ def assign_based_on_gender(students, m, ml, fm, ct, teamed, teams): #Students DO
             
     return students, count_members, count_males, count_females, current_team, teamed, teams
 
+#CODE FOR CLASS APPROACH
+for student in all_students:
+    
+    
+
+"""
 repeat = 0
 stud, cmm, cml, cfm, ct, teamed, teams = deepcopy(all_students), 0, 0, 0, 1, 0, {}
 while teamed <= len(all_students) and repeat<=len(all_students)-teamed:
@@ -163,7 +170,7 @@ print('Repetitions:', repeat)
 print(cmm, cml, cfm, ct, teamed, len(teams))
 for key in teams:
     print(key, teams[key])
-
+"""
 
 wb = Workbook()
 ws = wb.active
