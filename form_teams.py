@@ -54,6 +54,12 @@ class Team:
             else:
                 self.females +=1
             self.scorebalance += member.category
+    
+    def numberOf(self, gender):
+        if gender == 'male':
+            return self.males
+        else:
+            return self.females
 
     def isBalancedby(self, variable): #UNDER CONSTRUCTION
         if isinstance(variable, str):
@@ -81,7 +87,6 @@ for i in range(len(sorted_by_id) - 1):
         print("ERROR: Duplicate students found. Rows:", i, j) #LOGIC ISSUE
         sys.exit(1)
 
-    
 
 sorted_by_score = sorted(data_list, key=lambda x: x[2])
 
@@ -164,17 +169,36 @@ def assign_based_on_gender(students, m, ml, fm, ct, teamed, teams): #Students DO
     return students, count_members, count_males, count_females, current_team, teamed, teams
 
 #CODE FOR CLASS APPROACH
-current_team = 1
+remaining = {}
+remaining['male'] = count_males  #at some point we will need to know if we have run out of one gender
+remaining['female'] = count_notmales
+new_team_id = 1
+all_students[0].team = new_team_id
 initial_members = [ all_students[0] ]
-team1 = Team(current_team, initial_members)
+team1 = Team(new_team_id, initial_members)
+remaining[all_students[0].gender] -= 1
+
 print('id:', team1.id, team1.members[0].id, 'size', team1.size, 'males', team1.males, 'females', team1.females, 'scb', team1.scorebalance)
-"""
-all_teams = 
+
+all_teams = [team1]
 for student in all_students:
     if student.team != 0:
+        remaining[student.gender] -= 1
         continue
-    for i in range(0, )
-"""
+    entered = False
+    for team in all_teams:
+        if team.numberOf(student.gender)<2:
+            entered = True
+            #do stuff
+            break
+        
+    if not entered:
+        new_team_id += 1
+        student.team = new_team_id
+        initial_members = [student]
+        new_team = Team(new_team_id, initial_members)
+        all_teams.append(new_team)
+
 
     
 
