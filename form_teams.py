@@ -22,6 +22,12 @@ def is_number(value):
         return True
     except ValueError:
         return False
+    
+def swap_gender(gender):
+    if gender == 'male':
+        return 'female'
+    else:
+        return 'male'
 
 class Student:
     def __init__(self, id, gender, score, friendid):
@@ -44,7 +50,6 @@ class Team:
                 self.members = [members] 
             else:
                 self.members = []
-        self.size = len(self.members)
         self.males = 0
         self.females = 0
         self.scorebalance = 0
@@ -64,6 +69,17 @@ class Team:
     def isBalancedby(self, variable): #UNDER CONSTRUCTION
         if isinstance(variable, str):
             return True
+    
+    def size(self):
+        return len(self.members)
+    
+    def add_member(self, newmember):
+        self.members.append(newmember)
+        if newmember.gender == 'male':
+            self.males += 1
+        else:
+            self.females += 1
+        self.scorebalance += newmember.category
 
 #Check for header
 preview_data = pd.read_excel(args.input, nrows=5)
@@ -189,7 +205,9 @@ for student in all_students:
     for team in all_teams:
         if team.numberOf(student.gender)<2:
             entered = True
-            #do stuff
+            remaining[student.gender] -= 1
+            student.team = team.id
+            team.add_member(student)
             break
         
     if not entered:
@@ -198,6 +216,7 @@ for student in all_students:
         initial_members = [student]
         new_team = Team(new_team_id, initial_members)
         all_teams.append(new_team)
+        
 
 
     
@@ -218,8 +237,8 @@ for key in teams:
 wb = Workbook()
 ws = wb.active
 
-for key in teams:
-    ws.append([str(elem) for elem in teams[key]])
+for team in all_teams:
+    ws.append([str(elem) for elem in team])
 
 # Save the workbook
 wb.save('teams.xlsx')
