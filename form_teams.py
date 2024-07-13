@@ -32,6 +32,33 @@ class Student:
         self.category = 0
         self.team = 0
 
+class Team:
+
+    def __init__(self, id, team):
+        self.id = id
+        # Ensure team is always a list
+        if isinstance(team, list):
+            self.team = team
+        else:
+            if team != 0:
+                self.team = [team]
+            else:
+                self.team = []
+        self.size = len(self.team)
+        self.males = 0
+        self.females = 0
+        self.scorebalance = 0
+        for member in self.team:
+            if member.gender == 'male':
+                self.males +=1
+            else:
+                self.females +=1
+            self.scorebalance += member.category
+
+    def isBalancedby(self, variable): #UNDER CONSTRUCTION
+        if isinstance(variable, str):
+            return True
+
 # Read input Excel file
 input_data = pd.read_excel(args.input)
 data_list = input_data.values.tolist()
@@ -55,7 +82,7 @@ count_males = 0
 count_notmales = 0
 all_students = []
 for i in range(len(sorted_by_score)):
-    if sorted_by_score[i][1] != 'male' and sorted_by_score[i][1] != 'female':
+    if sorted_by_score[i][1] != 'male' and sorted_by_score[i][1] != 'female': #fixes value issues with gender, primarly NaN=no value
         sorted_by_score[i][1] = 'not-specified'
     
     if sorted_by_score[i][1] == 'male':
@@ -63,21 +90,21 @@ for i in range(len(sorted_by_score)):
     else:
         count_notmales += 1
     
-    if not(is_number(sorted_by_score[i][2])):
+    if not(is_number(sorted_by_score[i][2])): #fixes value issues with score, primarly NaN
         sorted_by_score[i][2] = 0
     else:
         sorted_by_score[i][3] = sorted_by_score[i][3]
     
-    if not(is_number(sorted_by_score[i][3])):
+    if not(is_number(sorted_by_score[i][3])): #fixes value issues with friend id, primarly NaN
         sorted_by_score[i][3] = 0
     else:
         sorted_by_score[i][3] = int(sorted_by_score[i][3])
     
     student = Student(sorted_by_score[i][0], sorted_by_score[i][1], sorted_by_score[i][2], sorted_by_score[i][3])
     if i<b1:
-        student.category = 1
+        student.category = 1 #assigns one of the 4 categories. Condition works because sorted_by_score is sorted based on score
     elif i<b2:
-        student.category = 10 #assigns one of the 4 categories. Condition works because sorted_by_score is sorted based on score
+        student.category = 10 
     elif i<b3:
         student.category = 100
     else:
