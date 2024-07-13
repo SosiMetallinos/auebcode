@@ -141,6 +141,67 @@ for i in range(len(sorted_by_score)):
         student.category = 1000
     all_students.append(student)
 
+
+#INITIALIZE VARIABLES
+remaining = {}
+remaining['male'] = count_males  #at some point we will need to know if we have run out of one gender
+remaining['female'] = count_notmales
+new_team_id = 1
+all_students[0].team = new_team_id
+initial_members = [ all_students[0] ]
+team1 = Team(new_team_id, initial_members)
+remaining[all_students[0].gender] -= 1
+#print('id:', team1.id, team1.members[0].id, 'size', team1.size, 'males', team1.males, 'females', team1.females, 'scb', team1.scorebalance)
+all_teams = [team1]
+for student in all_students:
+    if student.team != 0:
+        remaining[student.gender] -= 1
+        continue
+    entered = False
+    for team in all_teams:
+        if team.numberOf(student.gender)<2:
+            entered = True
+            remaining[student.gender] -= 1
+            student.team = team.id
+            team.add_member(student)
+            break
+        
+    if not entered:
+        new_team_id += 1
+        student.team = new_team_id
+        initial_members = [student]
+        new_team = Team(new_team_id, initial_members)
+        all_teams.append(new_team)
+        
+
+
+
+iteratable_teams = []
+for team in all_teams:
+    memberlist = [team.id]  # Start with the team ID
+    for member in team.members:
+        memberlist.append(member.id)
+    memberlist.append(team.scorebalance)
+    memberlist.append(team.males)
+    memberlist.append(team.females)
+    iteratable_teams.append(memberlist)
+wb = Workbook()
+ws = wb.active
+
+headers = ["Team ID", "Member1", "Member2", "Member3", "Member4", "Balance", "Males", "Females"]
+ws.append(headers)
+for team in iteratable_teams:
+    ws.append([str(elem) for elem in team])
+
+# Save the workbook
+wb.save('teams.xlsx')
+
+print("Team formation completed successfully!")
+
+
+"""
+PREVIOUS ATEMPT
+
 def assign_based_on_gender(students, m, ml, fm, ct, teamed, teams): #Students DONT get to choose any member of their team, 2+ women per team of 4-5, balanced skills
     count_members = m               
     count_males = ml
@@ -179,42 +240,6 @@ def assign_based_on_gender(students, m, ml, fm, ct, teamed, teams): #Students DO
             
     return students, count_members, count_males, count_females, current_team, teamed, teams
 
-#INITIALIZE VARIABLES
-remaining = {}
-remaining['male'] = count_males  #at some point we will need to know if we have run out of one gender
-remaining['female'] = count_notmales
-new_team_id = 1
-all_students[0].team = new_team_id
-initial_members = [ all_students[0] ]
-team1 = Team(new_team_id, initial_members)
-remaining[all_students[0].gender] -= 1
-#print('id:', team1.id, team1.members[0].id, 'size', team1.size, 'males', team1.males, 'females', team1.females, 'scb', team1.scorebalance)
-all_teams = [team1]
-for student in all_students:
-    if student.team != 0:
-        remaining[student.gender] -= 1
-        continue
-    entered = False
-    for team in all_teams:
-        if team.numberOf(student.gender)<2:
-            entered = True
-            remaining[student.gender] -= 1
-            student.team = team.id
-            team.add_member(student)
-            break
-        
-    if not entered:
-        new_team_id += 1
-        student.team = new_team_id
-        initial_members = [student]
-        new_team = Team(new_team_id, initial_members)
-        all_teams.append(new_team)
-        
-
-
-    
-
-"""
 repeat = 0
 stud, cmm, cml, cfm, ct, teamed, teams = deepcopy(all_students), 0, 0, 0, 1, 0, {}
 while teamed <= len(all_students) and repeat<=len(all_students)-teamed:
@@ -226,24 +251,3 @@ print(cmm, cml, cfm, ct, teamed, len(teams))
 for key in teams:
     print(key, teams[key])
 """
-iteratable_teams = []
-for team in all_teams:
-    memberlist = [team.id]  # Start with the team ID
-    for member in team.members:
-        memberlist.append(member.id)
-    memberlist.append(team.scorebalance)
-    memberlist.append(team.males)
-    memberlist.append(team.females)
-    iteratable_teams.append(memberlist)
-wb = Workbook()
-ws = wb.active
-
-headers = ["Team ID", "Member1", "Member2", "Member3", "Member4", "Balance", "Males", "Females"]
-ws.append(headers)
-for team in iteratable_teams:
-    ws.append([str(elem) for elem in team])
-
-# Save the workbook
-wb.save('teams.xlsx')
-
-print("Team formation completed successfully!")
