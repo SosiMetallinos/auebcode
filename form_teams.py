@@ -226,12 +226,22 @@ print(cmm, cml, cfm, ct, teamed, len(teams))
 for key in teams:
     print(key, teams[key])
 """
-
+iteratable_teams = []
+for team in all_teams:
+    memberlist = [team.id]  # Start with the team ID
+    for member in team.members:
+        memberlist.append(member.id)
+    memberlist.append(team.scorebalance)
+    memberlist.append(team.males)
+    memberlist.append(team.females)
+    iteratable_teams.append(memberlist)
 wb = Workbook()
 ws = wb.active
 
-for team in all_teams:
-    ws.append([str(elem) for elem in team.members])
+headers = ["Team ID", "Member1", "Member2", "Member3", "Member4", "Balance", "Males", "Females"]
+ws.append(headers)
+for team in iteratable_teams:
+    ws.append([str(elem) for elem in team])
 
 # Save the workbook
 wb.save('teams.xlsx')
