@@ -152,7 +152,7 @@ team1 = Team(new_team_id, initial_members)
 remaining[all_students[0].gender] -= 1
 #print('id:', team1.id, team1.members[0].id, 'size', team1.size, 'males', team1.males, 'females', team1.females, 'scb', team1.scorebalance)
 all_teams = [team1]
-for index, student in all_students:
+for index, student in enumerate(all_students):
     if student.team != 0:
         remaining[student.gender] -= 1
         continue
