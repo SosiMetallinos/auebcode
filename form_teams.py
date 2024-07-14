@@ -4,7 +4,6 @@ import sys
 from openpyxl import Workbook
 from copy import deepcopy
 
-#cd C:\Users\Sosipatros\Documents\GitHub\auebcode
 #python form_teams.py students.xlsx
 
 parser = argparse.ArgumentParser(description='Team Formation Program')
@@ -153,7 +152,7 @@ team1 = Team(new_team_id, initial_members)
 remaining[all_students[0].gender] -= 1
 #print('id:', team1.id, team1.members[0].id, 'size', team1.size, 'males', team1.males, 'females', team1.females, 'scb', team1.scorebalance)
 all_teams = [team1]
-for student in all_students:
+for index, student in all_students:
     if student.team != 0:
         remaining[student.gender] -= 1
         continue
@@ -165,15 +164,33 @@ for student in all_students:
             student.team = team.id
             team.add_member(student)
             break
-        
+    #For very bad data e.g. too many consecutive men 
     if not entered:
+        for i in range(index+1, len(all_students)):
+            next_gender_ctgr = 10000
+            if all_students[i].gender != student.gender and all_students[i].team == 0:
+                if i < index+8:
+                    break
+                next_gender_ctgr = all_students[i].category
+            else:
+                continue
+            if next_gender_ctgr <= student.category*10: #It is implied that i>=index+8 as well
+                for each_team in all_teams:
+                    if each_team.size() <4 and each_team.males*each_team.females==0: #not a full team and the other gender is zero
+                        entered = True
+                        remaining[student.gender] -=1
+                        student.team = each_team.id
+                        each_team.add_member(student)
+                        break
+            if entered:
+                break
+
+    if not entered: #all attempts to put him/her in an existing team failed. Now let's make a new one
         new_team_id += 1
         student.team = new_team_id
         initial_members = [student]
         new_team = Team(new_team_id, initial_members)
         all_teams.append(new_team)
-        
-
 
 
 iteratable_teams = []
