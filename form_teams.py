@@ -82,6 +82,20 @@ class Team:
         else:
             self.females += 1
         self.scorebalance += newmember.category
+    
+    def pop_member(self, oldmember):
+        toberemoved = None
+        for i in range(len(self.members)):
+            if oldmember.id == self.members[i].id:
+                toberemoved = self.members.pop(i)
+                break
+        if toberemoved:
+            if oldmember.gender == 'male':
+                self.males -= 1
+            else:
+                self.females -= 1
+            self.scorebalance -= oldmember.category
+        return toberemoved
 
 #Check for header
 preview_data = pd.read_excel(args.input, nrows=5)
@@ -121,8 +135,8 @@ non_specified = []
 all_students = []
 for i in range(len(sorted_by_score)):
     if sorted_by_score[i][1] != 'male' and sorted_by_score[i][1] != 'female': #fixes value issues with gender, primarly NaN=no value
-        sorted_by_score[i][1] = 'female'
-        print("\nnot specified gender for id=", sorted_by_score[i][0])
+        sorted_by_score[i][1] = 'male'
+        print("\nNot specified gender for id=", sorted_by_score[i][0], "\n")
         non_specified.append(i)
     
     if sorted_by_score[i][1] == 'male':
@@ -177,14 +191,16 @@ for index, student in enumerate(all_students):
 
     #For very bad data e.g. too many consecutive men, we make exceptions and create same sex teams
     if not entered:
+        extra = 0
         x = (count[swap_gender(student.gender)] - remaining[swap_gender(student.gender)])%2 #is "how many used of the opposite gender" odd or even?
         for i in range(index+1, len(all_students)): #Step1: check upcoming students
-            if i >= index + 9 or remaining[swap_gender(student.gender)] <= 2-x: #If any of this two is true then we have to create a new team
+            if i >= index + 7-2*extra or remaining[swap_gender(student.gender)] <= 2-x: #If any of this two is true then we have to create a new team
                 break
             if all_students[i].gender == student.gender:
                 for each_team in all_teams:
                   if each_team.size() <4 and each_team.males*each_team.females==0: #not a full team and the other gender is zero
                     entered = True
+                    extra +=1 #ensures same sex teams
                     student.team = each_team.id
                     each_team.add_member(student)
                     break
@@ -201,6 +217,36 @@ for index, student in enumerate(all_students):
         new_team = Team(new_team_id, initial_members)
         all_teams.append(new_team)
 
+bestnum = len(all_students) // 4 #Ideal number of teams
+extra_teams = len(all_teams) - bestnum
+i = len(all_teams)-1
+incomplete = []
+extras = 0
+while i >= 0 and len(incomplete) < extra_teams:
+    if len(all_teams[i].members) < 4:
+        incomplete.append(all_teams[i].id)
+        extras += len(all_teams[i].members)
+    i -=1
+
+i = len(all_teams) - 1
+if extras <= 3:
+    for j in incomplete:
+        # Create a copy of the member list to avoid modifying the list while iterating
+        members_to_move = all_teams[j].members.copy()
+        for student in members_to_move:
+            while i >= 0 and extras > 0:
+                if len(all_teams[i].members) == 4:  # Look for a team that already has 4 members
+                    student.team = all_teams[i].id  # Assign student to the new team
+                    all_teams[i].add_member(all_teams[j].pop_member(student))  # Move student to the new team
+                    extras -= 1  # Decrement extras since we assigned one student
+                    break  # Move to the next student after successfully moving the current one
+                i -= 1  # Move to the next team if current team is not suitable
+
+
+
+
+        
+
 for index in non_specified:
     all_students[index].gender = 'not specified'
 
@@ -210,7 +256,7 @@ for team in all_teams:
     for member in team.members:
         memberlist.append(member.id)
     missing = 5-len(team.members)
-    for i in missing:
+    for i in range(missing):
         memberlist.append(" ")
     memberlist.append(team.scorebalance)
     memberlist.append(team.males)
@@ -230,57 +276,3 @@ wb.save('teams.xlsx')
 
 print("\n\nDone!")
 print("You will find a teams.xlsx file in the same folder as the script. Previous teams.xlsx files will be overwritten.")
-
-
-"""
-PREVIOUS ATEMPT
-
-def assign_based_on_gender(students, m, ml, fm, ct, teamed, teams): #Students DONT get to choose any member of their team, 2+ women per team of 4-5, balanced skills
-    count_members = m               
-    count_males = ml
-    count_females = fm
-    current_team = ct
-    for i in range(len(students)):
-        if students[i].team != 0: #Skip if student already assigned a team
-            continue
-        if count_members >= 4: 
-            current_team +=1
-            count_members = 1
-            if students[i].gender == 'male':
-                count_males = 1
-                count_females = 0
-            else:
-                count_females = 1
-                count_males = 0
-            students[i].team = current_team
-        else:
-            if students[i].gender == 'male' and count_males >=2:
-                continue
-            elif students[i].gender == 'female' and count_females >=2:
-                continue
-            else:
-                students[i].team = current_team
-                if students[i].gender == 'male':
-                    count_males +=1
-                else:
-                    count_females +=1
-                count_members +=1
-        teamed +=1 #INCORRECT RESULT, WHY?
-        if current_team in teams:
-            teams[current_team].append(students[i].id)
-        else:
-            teams[current_team] = [students[i].id]
-            
-    return students, count_members, count_males, count_females, current_team, teamed, teams
-
-repeat = 0
-stud, cmm, cml, cfm, ct, teamed, teams = deepcopy(all_students), 0, 0, 0, 1, 0, {}
-while teamed <= len(all_students) and repeat<=len(all_students)-teamed:
-    repeat +=1
-    stud, cmm, cml, cfm, ct, teamed, teams = assign_based_on_gender(deepcopy(stud), cmm, cml, cfm, ct, teamed, deepcopy(teams))
-
-print('Repetitions:', repeat)
-print(cmm, cml, cfm, ct, teamed, len(teams))
-for key in teams:
-    print(key, teams[key])
-"""
