@@ -183,7 +183,7 @@ for index, student in enumerate(all_students):
 
     entered = False
     for team in all_teams: #Normally there should be an appropriate already-formed team
-        if team.number_of(student.gender)<2 and team.size()<4:
+        if team.number_of(student.gender)<2 and team.size()<4 and not (team.males == 3 and student.gender == 'female'):
             entered = True
             student.team = team.id
             team.add_member(student)
@@ -194,11 +194,11 @@ for index, student in enumerate(all_students):
         extra = 0
         x = (count[swap_gender(student.gender)] - remaining[swap_gender(student.gender)])%2 #is "how many used of the opposite gender" odd or even?
         for i in range(index+1, len(all_students)): #Step1: check upcoming students
-            if i >= index + 7-2*extra or remaining[swap_gender(student.gender)] <= 2-x: #If any of this two is true then we have to create a new team
+            if i >= index + 7-extra or remaining[swap_gender(student.gender)] <= 2-x: #If any of this two is true then we have to create a new team
                 break
             if all_students[i].gender == student.gender:
                 for each_team in all_teams:
-                  if each_team.size() <4 and each_team.males*each_team.females==0: #not a full team and the other gender is zero
+                  if each_team.size() <4 and each_team.males*each_team.females==0 and not (each_team.males == 3 and student.gender == 'female'): #not a full team and the other gender is zero
                     entered = True
                     extra +=1 #ensures same sex teams
                     student.team = each_team.id
@@ -232,20 +232,16 @@ i = len(all_teams) - 1
 if extras <= 3:
     for j in incomplete:
         # Create a copy of the member list to avoid modifying the list while iterating
-        members_to_move = all_teams[j].members.copy()
+        members_to_move = all_teams[j-1].members.copy()
         for student in members_to_move:
             while i >= 0 and extras > 0:
                 if len(all_teams[i].members) == 4:  # Look for a team that already has 4 members
                     student.team = all_teams[i].id  # Assign student to the new team
-                    all_teams[i].add_member(all_teams[j].pop_member(student))  # Move student to the new team
+                    all_teams[i].add_member(all_teams[j-1].pop_member(student))  # Move student to the new team
                     extras -= 1  # Decrement extras since we assigned one student
                     break  # Move to the next student after successfully moving the current one
                 i -= 1  # Move to the next team if current team is not suitable
-
-
-
-
-        
+all_teams = [team for team in all_teams if len(team.members) > 0] #delete empty teams
 
 for index in non_specified:
     all_students[index].gender = 'not specified'
@@ -268,7 +264,6 @@ ws = wb.active
 headers = ["Team ID", "Member1", "Member2", "Member3", "Member4", "Member5", "Balance", "Males", "Females"]
 ws.append(headers)
 for team in iteratable_teams:
-    print(team)
     ws.append([str(elem) for elem in team])
 
 # Save the workbook
