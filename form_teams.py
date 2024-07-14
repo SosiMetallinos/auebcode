@@ -114,17 +114,18 @@ b1 = n // 4   # First boundary: 25th percentile
 b2 = n // 2   # Second boundary: 50th percentile (median)
 b3 = 3 * n // 4   # Third boundary: 75th percentile
 
-count_males = 0
-count_notmales = 0
+count = {}
+count['male'] = 0
+count['female'] = 0
 all_students = []
 for i in range(len(sorted_by_score)):
     if sorted_by_score[i][1] != 'male' and sorted_by_score[i][1] != 'female': #fixes value issues with gender, primarly NaN=no value
         sorted_by_score[i][1] = 'not-specified'
     
     if sorted_by_score[i][1] == 'male':
-        count_males += 1
+        count['male'] += 1
     else:
-        count_notmales += 1
+        count['female'] += 1
     
     if not(is_number(sorted_by_score[i][2])): #fixes value issues with score, primarly NaN
         sorted_by_score[i][2] = 0
@@ -150,49 +151,46 @@ for i in range(len(sorted_by_score)):
 
 #INITIALIZE VARIABLES
 remaining = {}
-remaining['male'] = count_males  #at some point we will need to know if we have run out of one gender
-remaining['female'] = count_notmales
+remaining['male'] = count['male']  #at some point we will need to know if we have run out of one gender
+remaining['female'] = count['female']
 new_team_id = 1
 all_students[0].team = new_team_id
 initial_members = [ all_students[0] ]
 team1 = Team(new_team_id, initial_members)
 remaining[all_students[0].gender] -= 1
-#print('id:', team1.id, team1.members[0].id, 'size', team1.size, 'males', team1.males, 'females', team1.females, 'scb', team1.scorebalance)
 all_teams = [team1]
 for index, student in enumerate(all_students):
-    if student.team != 0:
-        remaining[student.gender] -= 1
+    remaining[student.gender] -= 1 #A student will be assigned a team ALWAYS or ignored in the next line
+    if student.team != 0: #Ignore student if they have a team
         continue
+
     entered = False
-    for team in all_teams:
+    for team in all_teams: #Normally there should be an appropriate already-formed team
         if team.number_of(student.gender)<2 and team.size()<4:
             entered = True
-            remaining[student.gender] -= 1
             student.team = team.id
             team.add_member(student)
             break
 
-    #For very bad data e.g. too many consecutive men 
+    #For very bad data e.g. too many consecutive men we make exceptions and create same sex teams
     if not entered:
-        for i in range(index+1, len(all_students)):
-            next_gender_ctgr = 10000
-            if all_students[i].gender != student.gender and all_students[i].team == 0:
-                if i < index+8:
-                    break
-                next_gender_ctgr = all_students[i].category
-            else:
-                continue
-            if next_gender_ctgr <= student.category*10: #It is implied that i>=index+8 as well
-                for each_team in all_teams:
-                    if each_team.size() <4 and each_team.males*each_team.females==0: #not a full team and the other gender is zero
-                        entered = True
-                        remaining[student.gender] -=1
-                        student.team = each_team.id
-                        each_team.add_member(student)
-                        break
-            if entered:
+        x = (count[swap_gender(student.gender)] - remaining[swap_gender(student.gender)])%2 #is "how many used of the opposite gender" odd or even?
+        for i in range(index+1, len(all_students)): #Step1: check upcoming students
+            if i >= index + 9 or remaining[swap_gender(student.gender)] <= 2-x:
                 break
-    
+            if all_students[i].gender == student.gender:
+                for each_team in all_teams:
+                  if each_team.size() <4 and each_team.males*each_team.females==0: #not a full team and the other gender is zero
+                    entered = True
+                    student.team = each_team.id
+                    each_team.add_member(student)
+                    break
+            else:
+                if all_students[i].team != 0:
+                    continue
+                else:
+                    break
+
     if not entered: #all attempts to put him/her in an existing team failed. Now let's make a new one
         new_team_id += 1
         student.team = new_team_id
