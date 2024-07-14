@@ -117,10 +117,13 @@ b3 = 3 * n // 4   # Third boundary: 75th percentile
 count = {}
 count['male'] = 0
 count['female'] = 0
+non_specified = []
 all_students = []
 for i in range(len(sorted_by_score)):
     if sorted_by_score[i][1] != 'male' and sorted_by_score[i][1] != 'female': #fixes value issues with gender, primarly NaN=no value
-        sorted_by_score[i][1] = 'not-specified'
+        sorted_by_score[i][1] = 'female'
+        print("\nnot specified gender for id=", sorted_by_score[i][0])
+        non_specified.append(i)
     
     if sorted_by_score[i][1] == 'male':
         count['male'] += 1
@@ -172,11 +175,11 @@ for index, student in enumerate(all_students):
             team.add_member(student)
             break
 
-    #For very bad data e.g. too many consecutive men we make exceptions and create same sex teams
+    #For very bad data e.g. too many consecutive men, we make exceptions and create same sex teams
     if not entered:
         x = (count[swap_gender(student.gender)] - remaining[swap_gender(student.gender)])%2 #is "how many used of the opposite gender" odd or even?
         for i in range(index+1, len(all_students)): #Step1: check upcoming students
-            if i >= index + 9 or remaining[swap_gender(student.gender)] <= 2-x:
+            if i >= index + 9 or remaining[swap_gender(student.gender)] <= 2-x: #If any of this two is true then we have to create a new team
                 break
             if all_students[i].gender == student.gender:
                 for each_team in all_teams:
@@ -198,12 +201,17 @@ for index, student in enumerate(all_students):
         new_team = Team(new_team_id, initial_members)
         all_teams.append(new_team)
 
+for index in non_specified:
+    all_students[index].gender = 'not specified'
 
 iteratable_teams = []
 for team in all_teams:
     memberlist = [team.id]  # Start with the team ID
     for member in team.members:
         memberlist.append(member.id)
+    missing = 5-len(team.members)
+    for i in missing:
+        memberlist.append(" ")
     memberlist.append(team.scorebalance)
     memberlist.append(team.males)
     memberlist.append(team.females)
@@ -211,7 +219,7 @@ for team in all_teams:
 wb = Workbook()
 ws = wb.active
 
-headers = ["Team ID", "Member1", "Member2", "Member3", "Member4", "Balance", "Males", "Females"]
+headers = ["Team ID", "Member1", "Member2", "Member3", "Member4", "Member5", "Balance", "Males", "Females"]
 ws.append(headers)
 for team in iteratable_teams:
     print(team)
