@@ -142,7 +142,7 @@ for i in range(len(sorted_by_score)):
     if sorted_by_score[i][1] == 'male':
         count['male'] += 1
     else:
-        count['female'] += 1
+        count['female'] +=1
     
     if not(is_number(sorted_by_score[i][2])): #fixes value issues with score, primarly NaN
         sorted_by_score[i][2] = 0
@@ -165,7 +165,6 @@ for i in range(len(sorted_by_score)):
         student.category = 1000
     all_students.append(student)
 
-
 #INITIALIZE VARIABLES
 remaining = {}
 remaining['male'] = count['male']  #at some point we will need to know if we have run out of one gender
@@ -174,7 +173,6 @@ new_team_id = 1
 all_students[0].team = new_team_id
 initial_members = [ all_students[0] ]
 team1 = Team(new_team_id, initial_members)
-remaining[all_students[0].gender] -= 1
 all_teams = [team1]
 for index, student in enumerate(all_students):
     remaining[student.gender] -= 1 #A student will be assigned a team ALWAYS or ignored in the next line
@@ -183,7 +181,7 @@ for index, student in enumerate(all_students):
 
     entered = False
     for team in all_teams: #Normally there should be an appropriate already-formed team
-        if team.number_of(student.gender)<2 and team.size()<4 and not (team.males == 3 and student.gender == 'female'):
+        if team.size() < 4 and ((team.number_of(student.gender)<2 and not (team.males == 3 and student.gender == 'female')) or (team.males==3 and student.gender == 'male') or (team.females==3 and student.gender == 'female') or (team.females==2 and student.gender=='female' and remaining['male']<=1)):
             entered = True
             student.team = team.id
             team.add_member(student)
