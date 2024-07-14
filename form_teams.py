@@ -3,8 +3,15 @@ import pandas as pd
 import sys
 from openpyxl import Workbook
 from copy import deepcopy
+import time
 
 #python form_teams.py students.xlsx
+
+print("Processing", end="") #Loading screen
+for _ in range(4):
+    sys.stdout.write('.')
+    sys.stdout.flush()
+    time.sleep(1)
 
 parser = argparse.ArgumentParser(description='Team Formation Program')
 parser.add_argument('input', type=str, help='Input Excel file')
@@ -59,7 +66,7 @@ class Team:
                 self.females +=1
             self.scorebalance += member.category
     
-    def numberOf(self, gender):
+    def number_of(self, gender):
         if gender == 'male':
             return self.males
         else:
@@ -158,12 +165,13 @@ for index, student in enumerate(all_students):
         continue
     entered = False
     for team in all_teams:
-        if team.numberOf(student.gender)<2:
+        if team.number_of(student.gender)<2 and team.size()<4:
             entered = True
             remaining[student.gender] -= 1
             student.team = team.id
             team.add_member(student)
             break
+
     #For very bad data e.g. too many consecutive men 
     if not entered:
         for i in range(index+1, len(all_students)):
@@ -184,7 +192,7 @@ for index, student in enumerate(all_students):
                         break
             if entered:
                 break
-
+    
     if not entered: #all attempts to put him/her in an existing team failed. Now let's make a new one
         new_team_id += 1
         student.team = new_team_id
@@ -208,12 +216,14 @@ ws = wb.active
 headers = ["Team ID", "Member1", "Member2", "Member3", "Member4", "Balance", "Males", "Females"]
 ws.append(headers)
 for team in iteratable_teams:
+    print(team)
     ws.append([str(elem) for elem in team])
 
 # Save the workbook
 wb.save('teams.xlsx')
 
-print("Team formation completed successfully!")
+print("\n\nDone!")
+print("You will find a teams.xlsx file in the same folder as the script. Previous teams.xlsx files will be overwritten.")
 
 
 """
