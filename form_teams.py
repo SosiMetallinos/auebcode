@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 import sys
 from openpyxl import Workbook
+from openpyxl.styles import Font
 from copy import deepcopy
 import time
 
@@ -11,7 +12,7 @@ print("Processing", end="") #Loading screen
 for _ in range(4):
     sys.stdout.write('.')
     sys.stdout.flush()
-    time.sleep(1)
+    time.sleep(0.5)
 
 parser = argparse.ArgumentParser(description='Team Formation Program')
 parser.add_argument('input', type=str, help='Input Excel file')
@@ -215,18 +216,21 @@ for index, student in enumerate(all_students):
         new_team = Team(new_team_id, initial_members)
         all_teams.append(new_team)
 
+#---------ATTEMPTS TO CREATE SOME TEAMS OF 5 IN ORDER TO FIX INCOMPLETE TEAMS ONLY IF STRAY STUDENTS ARE MAXIMUM 3
+
 bestnum = len(all_students) // 4 #Ideal number of teams
 extra_teams = len(all_teams) - bestnum
 i = len(all_teams)-1
 incomplete = []
 extras = 0
-while i >= 0 and len(incomplete) < extra_teams:
+while i >= 0 and len(incomplete) < extra_teams: #FINDS INCOMPLETE TEAMS EVERYWHERE DESPITE THEM USUALLY APPEARING NEAR THE END
     if len(all_teams[i].members) < 4:
         incomplete.append(all_teams[i].id)
         extras += len(all_teams[i].members)
     i -=1
 
 i = len(all_teams) - 1
+
 if extras <= 3:
     for j in incomplete:
         # Create a copy of the member list to avoid modifying the list while iterating
@@ -240,6 +244,17 @@ if extras <= 3:
                     break  # Move to the next student after successfully moving the current one
                 i -= 1  # Move to the next team if current team is not suitable
 all_teams = [team for team in all_teams if len(team.members) > 0] #delete empty teams
+
+#----CHECKS ONE LAST TIME FOR INCOMPLETE TEAMS
+incomplete = []
+for team in all_teams:
+    if team.size() < 4:
+        incomplete.append(team.id)
+
+isolated_females = []
+for team in all_teams:
+    if team.females == 1:
+        isolated_females.append(team.id)
 
 for index in non_specified:
     all_students[index].gender = 'not specified'
@@ -255,14 +270,20 @@ for team in all_teams:
     memberlist.append(team.scorebalance)
     memberlist.append(team.males)
     memberlist.append(team.females)
+    if team.id in incomplete or team.id in isolated_females:
+        memberlist.append("ISSUE?")
     iteratable_teams.append(memberlist)
 wb = Workbook()
 ws = wb.active
 
-headers = ["Team ID", "Member1", "Member2", "Member3", "Member4", "Member5", "Balance", "Males", "Females"]
+headers = ["Team ID", "Member1", "Member2", "Member3", "Member4", "Member5", "Balance", "Males", "Females", "Comments"]
 ws.append(headers)
 for team in iteratable_teams:
     ws.append([str(elem) for elem in team])
+
+for team_id in incomplete:
+    print("\nTeam", team_id, "incomplete!")
+
 
 # Save the workbook
 wb.save('teams.xlsx')
