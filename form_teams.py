@@ -137,7 +137,7 @@ all_students = []
 for i in range(len(sorted_by_score)):
     if sorted_by_score[i][1] != 'male' and sorted_by_score[i][1] != 'female': #fixes value issues with gender, primarly NaN=no value
         sorted_by_score[i][1] = 'male'
-        print("\nNot specified gender for id=", sorted_by_score[i][0], "\n")
+        print("\nNot specified gender for id =", sorted_by_score[i][0], "\n")
         non_specified.append(i)
     
     if sorted_by_score[i][1] == 'male':
